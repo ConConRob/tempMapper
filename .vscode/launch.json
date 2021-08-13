@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    // {
+    //   "name": "Node Inspector",
+    //   "type": "node",
+    //   "request": "launch",
+    //   "args": ["${workspaceRoot}/src/index.ts"],
+    //   "runtimeArgs": ["-r", "ts-node/register"],
+    //   "cwd": "${workspaceRoot}",
+    //   "protocol": "inspector",
+    //   "internalConsoleOptions": "openOnSessionStart",
+    //   "env": {
+    //     "TS_NODE_IGNORE": "false"
+    //   }
+    // },
+    // {
+    //   "type": "node",
+    //   "request": "launch",
+    //   "name": "Launch Program",
+    //   "runtimeExecutable": "npm",
+    //   "windows": {
+    //     "runtimeExecutable": "npm.cmd"
+    //   },
+    //   "runtimeArgs": ["run-script", "start:debug"],
+    //   "cwd": "${workspaceRoot}/server",
+    //   "outFiles": [],
+    //   "port": 5858,
+    //   "sourceMaps": true
+    // }
+
+    {
+      "name": "Attach to SAM CLI",
+      "type": "node",
+      "request": "attach",
+      "address": "localhost",
+      "port": 5858,
+      // From the sam init example, it would be "${workspaceRoot}/hello-world"
+      "localRoot": "${workspaceRoot}/build",
+      "remoteRoot": "/var/task",
+      "protocol": "inspector",
+      "stopOnEntry": false
+    }
+  ]
+}
