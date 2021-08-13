@@ -1,0 +1,42 @@
+service: mapper-api
+
+plugins:
+  - serverless-bundle
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+custom:
+  # Our stage is based on what is passed in when running serverless
+  # commands. Or falls back to what we have set in the provider section.
+  stage: ${opt:stage, self:provider.stage}
+  # domains:
+  #   prod: api.evipscloud.com
+  #   dev: api.ev-dev-qa.com
+  bundle:
+    linting: false
+
+
+package:
+  individually: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-west-2
+  tracing:
+    lambda: true
+
+  # These environment variables are made available to our functions
+  # under process.env.
+  environment:
+    stage: ${self:custom.stage}
+
+
+functions:
+  getListings:
+    handler: src/handlers/getListings.handler
+    events:
+      - http:
+          path: listings
+          method: GET
