@@ -14,7 +14,9 @@
     "google-map-react": "^2.1.10",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-icons": "^4.2.0",
     "react-scripts": "4.0.3",
+    "styled-components": "^5.3.0",
     "typescript": "^4.3.5",
     "web-vitals": "^1.1.2"
   },
@@ -22,7 +24,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy": "npm run build && aws s3 cp ./build s3://connorrob.comdev-mapper --recursive --profile me"
   },
   "eslintConfig": {
     "extends": [
@@ -44,6 +47,7 @@
   },
   "devDependencies": {
     "@types/google-map-react": "^2.1.2",
-    "@types/node": "^16.4.13"
+    "@types/node": "^16.4.13",
+    "@types/styled-components": "^5.1.12"
   }
 }

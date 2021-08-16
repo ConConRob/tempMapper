@@ -1,14 +1,26 @@
+import styled from 'styled-components';
+import { formatMoney, formatNumber } from '../lib';
 import { listing } from '../types/listing';
 
 export function ListingCard({ listing }: { listing: listing }) {
   return (
-    <div style={{ background: 'white', width: 150, zIndex: 10000 }}>
+    <StyledListingCard>
       <h3>{listing.label}</h3>
       <h4>
-        {listing.city} {listing.country}
+        {listing.city} , {listing.country}
       </h4>
-      <span> monthly rate{listing.monthlyRate}</span>
-      <span> views{listing.totalViews}</span>
-    </div>
+      <p> Monthly Rate: {formatMoney(listing.monthlyRate)}</p>
+      <p> Views: {formatNumber(listing.totalViews)}</p>
+    </StyledListingCard>
   );
 }
+
+const StyledListingCard = styled.div`
+  padding: 20px;
+  background: #ffffff;
+  width: 200px;
+  z-index: 5;
+  span {
+    margin-bottom: 10px;
+  }
+`;

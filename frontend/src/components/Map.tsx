@@ -1,85 +1,100 @@
+/* global google */
+
 import GoogleMapReact from 'google-map-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import { fetchListings } from '../requests/listings';
 import { coordinate, listing } from '../types/listing';
-import { Dot } from './Dot';
 import { DotWitchCard } from './DotWitchCard';
+import { ListingCard } from './ListingCard';
+
+const initLoadData = {
+  center: {
+    lat: 43.65129,
+    lng: -79.37161,
+  },
+  zoom: 11,
+};
 
 export function Map() {
-  const defaultProps = {
-    center: {
-      lat: 43.65129,
-      lng: -79.37161,
-    },
-    zoom: 11,
-  };
+  function handleOnMapChange(data: GoogleMapReact.ChangeEventValue) {
+    setMapValues(data);
+  }
 
   const [mapValues, setMapValues] = useState<GoogleMapReact.ChangeEventValue>();
 
   const [listings, setListings] = useState<{ [id: string]: listing }>({});
 
+  const [internalMap, setInternalMap] =
+    useState<{ map: any; maps: any; ref: Element | null }>();
+
+  const [heatMap, setHeatMap] = useState<any>(null);
+
+  const [selectedListing, setSelectedListing] = useState<null | listing>(null);
+
   useEffect(() => {
     if (mapValues) {
       fetchAndSetListings(mapValues?.bounds?.nw, mapValues?.bounds?.se);
     }
-  }, [mapValues, mapValues?.bounds?.nw, mapValues?.bounds?.se]);
+  }, [
+    mapValues,
+    mapValues?.bounds?.nw,
+    mapValues?.bounds?.se,
+    internalMap,
+    heatMap,
+  ]);
 
   async function fetchAndSetListings(
     nwCoordinate: coordinate,
     seCoordinate: coordinate
   ) {
+    if (!internalMap || !heatMap) {
+      console.warn('map not loaded when trying to etch listings');
+      return;
+    }
+
     const listings = await fetchListings(nwCoordinate, seCoordinate);
     setListings((currentListings) => {
-      listings.forEach((listing) => (currentListings[listing._id] = listing));
+      currentListings = JSON.parse(JSON.stringify(currentListings));
+      listings.forEach((listing) => {
+        if (!currentListings[listing._id]) {
+          heatMap.data.push({
+            location: new internalMap.maps.LatLng(listing.lat, listing.long),
+            weight: listing.totalViews, // listing.totalViews,
+          });
+
+          currentListings[listing._id] = listing;
+        }
+      });
+
       return currentListings;
     });
+
+    heatMap.setMap(internalMap.map);
   }
 
-  const heatmapData = useMemo(() => {
-    const positions: {
-      lat: number;
-      lng: number;
-      weight?: number;
-    }[] = Object.values(listings).map((listing) => ({
-      lat: listing.lat,
-      lng: listing.long,
-      // weight:listing.totalViews
-    }));
+  function onApiLoaded(maps: { map: any; maps: any; ref: Element | null }) {
+    setInternalMap(maps);
+    //@ts-ignore
+    const googleGlobal = google;
+    const heatMap = new googleGlobal.maps.visualization.HeatmapLayer({
+      data: [],
+      options: { dissipating: true, maxIntensity: 10000, radius: 10 },
+    });
+    setHeatMap(heatMap);
+    heatMap.setMap(maps.map);
+  }
 
-    return {
-      positions: [
-        { lat: 43.509319, lng: -79.674783, weight: 5130 },
-        { lat: 43.509319, lng: -79.674783, weight: 9589 },
-        { lat: 43.444101, lng: -79.669944, weight: 11475 },
-        { lat: 43.4544816, lng: -79.6686557, weight: 12277 },
-        { lat: 43.5076822, lng: -79.66747642, weight: 12493 },
-        { lat: 43.4474108, lng: -79.6665485, weight: 7347 },
-        { lat: 43.4474108, lng: -79.6665485, weight: 9768 },
-        { lat: 43.605304, lng: -79.650811, weight: 5304 },
-        { lat: 43.587571, lng: -79.645281, weight: 7453 },
-        { lat: 43.575891, lng: -79.645196, weight: 6542 },
-        { lat: 43.593042, lng: -79.642794, weight: 10828 },
-        { lat: 43.593106, lng: -79.642247, weight: 13179 },
-        { lat: 43.7012845, lng: -79.6389232, weight: 6334 },
-        { lat: 43.7012845, lng: -79.6389232, weight: 14814 },
-      ],
-      options: {
-        radius: 20,
-        opacity: 0.6,
-      },
-    };
-  }, [listings]);
-
-  console.log(heatmapData);
   return (
-    <div style={{ height: '100vh', width: '100%' }}>
+    <StyledMap style={{ height: '100vh', width: '100%' }}>
       <GoogleMapReact
         bootstrapURLKeys={{ key: 'AIzaSyDFjZNErSWU6CC_hZ7P0OU-idfZqSMatWw' }}
-        onChange={setMapValues}
-        defaultCenter={defaultProps.center}
-        defaultZoom={defaultProps.zoom}
+        onChange={handleOnMapChange}
+        defaultCenter={initLoadData.center}
+        defaultZoom={initLoadData.zoom}
         heatmapLibrary
-        heatmap={heatmapData}
+        yesIWantToUseGoogleMapApiInternals
+        onGoogleApiLoaded={onApiLoaded}
       >
         {Object.values(listings).map((listing) => (
           <DotWitchCard
@@ -87,9 +102,29 @@ export function Map() {
             lat={listing.lat}
             lng={listing.long}
             listing={listing}
+            selectListing={setSelectedListing}
+            isSelected={selectedListing?._id === listing._id}
           />
         ))}
       </GoogleMapReact>
-    </div>
+
+      {selectedListing ? (
+        <div className='map-card-container'>
+          <ListingCard listing={selectedListing} />
+        </div>
+      ) : null}
+    </StyledMap>
   );
 }
+
+const StyledMap = styled.main`
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+
+  .map-card-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+  }
+`;

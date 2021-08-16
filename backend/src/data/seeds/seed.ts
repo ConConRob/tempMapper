@@ -52,8 +52,10 @@ export async function seed() {
       number
     ] = data;
     const listing = new Listing(...row);
+
+    // could look at throwing to avoid bad data
     if (Number.isNaN(listing.monthlyRate)) console.log(listing);
     await listingCollection.insertOne(JSON.parse(JSON.stringify(listing)));
-    console.log(i++);
+    console.log(`listings added: ${++i}`);
   }
 }

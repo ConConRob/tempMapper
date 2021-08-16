@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  AppName:
+    Type: String
+    Default: mapper
+  EnvironmentDevelopment:
+    Type: String
+    Default: dev
+  DomainDevelopment:
+    Type: String
+    Default: connorrob.com
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        !Join [
+          '',
+          ['connorrob.com', !Ref EnvironmentDevelopment, '-', !Ref AppName],
+        ]
+  S3BucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: 'Allow'
+            Resource:
+              Fn::Join:
+                - ''
+                - - !GetAtt S3Bucket.Arn
+                  - '/*'
+            Principal:
+              CanonicalUser: 9eb46a301f24681105d1f58ef0acec1f740f20cd0726fc7acf50c7f487a994b7
+  dnsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      # HostedZoneId: Z01125342EE79NJ7QMR0X
+      HostedZoneName: !Join ['', [!Ref DomainDevelopment, '.']]
+      Name: !Join ['', [!Ref AppName, '.', !Ref DomainDevelopment]]
+      Type: A
+      # TTL: '900'
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2
+        DNSName: !GetAtt 'distribution.DomainName'
+  cloudfrontoriginaccessidentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: 'some comment'
+
+  distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt 'S3Bucket.DomainName'
+            Id: myCustomOrigin
+            S3OriginConfig:
+              OriginAccessIdentity:
+                Fn::Join:
+                  - ''
+                  - - 'origin-access-identity/cloudfront/'
+                    - Ref: cloudfrontoriginaccessidentity
+        Enabled: true
+        Comment: !Join [' ', [!Ref AppName, !Ref EnvironmentDevelopment]]
+        DefaultRootObject: index.html
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        Aliases:
+          - !Join ['', [!Ref AppName, '.', !Ref DomainDevelopment]]
+        # Logging:
+        #   IncludeCookies: 'true'
+        #   Bucket:
+        #     !Join [
+        #       '',
+        #       ['engel-', !Ref EnvironmentDevelopment, '-logs.s3.amazonaws.com'],
+        #     ]
+        #   Prefix: !Join ['', [!Ref AppName, '/']]
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - HEAD
+            - GET
+            - OPTIONS
+          TargetOriginId: myCustomOrigin
+          ForwardedValues:
+            QueryString: 'false'
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+          DefaultTTL: 0
+
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: arn:aws:acm:us-east-1:984119343101:certificate/f630e8e3-4c70-4139-a31c-6e00c3894887
+          MinimumProtocolVersion: TLSv1.1_2016
+          SslSupportMethod: sni-only
