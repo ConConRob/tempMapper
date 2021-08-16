@@ -5,7 +5,8 @@
   "main": "serverless.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "sls offline --stage dev --allowCache"
+    "start": "sls offline --stage dev --allowCache",
+    "deploy": "sls deploy --stage prod"
   },
   "engines": {
     "node": ">=14.15.0"
