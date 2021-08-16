@@ -1,4 +1,4 @@
-##To setup app
+## To setup app
 
 ```
 npm install --prefix backend
@@ -14,7 +14,7 @@ DB_NAME=<dbname>" > ./backend/.env.test
 
 make sure that your db has the db name
 
-##To run this fullstack app
+## To run this fullstack app
 
 ```
 npm start --prefix backend
