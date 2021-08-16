@@ -84,11 +84,10 @@ export function Map() {
     setHeatMap(heatMap);
     heatMap.setMap(maps.map);
   }
-
   return (
     <StyledMap style={{ height: '100vh', width: '100%' }}>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: 'AIzaSyDFjZNErSWU6CC_hZ7P0OU-idfZqSMatWw' }}
+        bootstrapURLKeys={{ key: process.env.REACT_APP_MAPS_KEY || '' }}
         onChange={handleOnMapChange}
         defaultCenter={initLoadData.center}
         defaultZoom={initLoadData.zoom}
