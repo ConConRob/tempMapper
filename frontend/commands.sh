@@ -3,5 +3,5 @@ aws cloudformation deploy  --profile me   --template-file ./template.yaml --stac
 
 
 # TO deploy
-npm run build
-aws s3 cp ./build s3://connorrob.comdev-mapper --recursive
+npm run build 
+aws s3 cp ./build s3://connorrob.comdev-mapper --recursive --profile me
