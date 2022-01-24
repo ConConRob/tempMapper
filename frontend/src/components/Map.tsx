@@ -1,7 +1,7 @@
 /* global google */
 
 import GoogleMapReact from 'google-map-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { fetchListings } from '../requests/listings';
 import { coordinate, listing } from '../types/listing';
@@ -32,19 +32,7 @@ export function Map() {
 
   const [selectedListing, setSelectedListing] = useState<null | listing>(null);
 
-  useEffect(() => {
-    if (mapValues) {
-      fetchAndSetListings(mapValues?.bounds?.nw, mapValues?.bounds?.se);
-    }
-  }, [
-    mapValues,
-    mapValues?.bounds?.nw,
-    mapValues?.bounds?.se,
-    internalMap,
-    heatMap,
-  ]);
-
-  async function fetchAndSetListings(
+  const fetchAndSetListings = useCallback( async function (
     nwCoordinate: coordinate,
     seCoordinate: coordinate
   ) {
@@ -71,9 +59,26 @@ export function Map() {
     });
 
     heatMap.setMap(internalMap.map);
-  }
+  }, [heatMap, internalMap])
 
-  function onApiLoaded(maps: { map: any; maps: any; ref: Element | null }) {
+  useEffect(() => {
+    if (mapValues) {
+      fetchAndSetListings(mapValues?.bounds?.nw, mapValues?.bounds?.se);
+    }
+  }, [
+    mapValues,
+    mapValues?.bounds?.nw,
+    mapValues?.bounds?.se,
+    internalMap,
+    heatMap,
+    fetchAndSetListings
+  ]);
+
+
+
+
+
+  const onApiLoaded = useCallback(function(maps: { map: any; maps: any; ref: Element | null }) {
     setInternalMap(maps);
     //@ts-ignore
     const googleGlobal = google;
@@ -83,7 +88,8 @@ export function Map() {
     });
     setHeatMap(heatMap);
     heatMap.setMap(maps.map);
-  }
+  },[])
+  
   return (
     <StyledMap style={{ height: '100vh', width: '100%' }}>
       <GoogleMapReact

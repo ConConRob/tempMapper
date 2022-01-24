@@ -13,10 +13,16 @@ replace <> values with your values
 
 ```
 echo -n "MONGODB_URI=<connectionString>
-DB_NAME=<dbname>" > ./backend/.env.test
+DB_NAME=<dbname>" > ./backend/.env
 ```
 
 make sure that your db has the db name
+
+## Prerequisites
+
+```
+npm install -g serverless
+```
 
 ## To run this fullstack app
 

@@ -5,7 +5,7 @@ import {
   APIGatewayProxyResult,
   Callback,
   Context,
-} from 'aws-lambda';
+} from "aws-lambda";
 
 export class HttpError {
   constructor(
@@ -15,14 +15,14 @@ export class HttpError {
   ) {
     if (!this.message) {
       // assign message based on code
-      this.message = 'Ahhhgg no general code messages';
+      this.message = "Ahhhgg no general code messages";
     }
   }
 }
 
 export interface IHandlerWrapperOptions {}
 
-type APIEventExtension = Omit<APIGatewayProxyEvent, 'body'> & {
+type APIEventExtension = Omit<APIGatewayProxyEvent, "body"> & {
   body: unknown;
   queryStringParameters: APIGatewayProxyEventQueryStringParameters;
 };
@@ -45,14 +45,14 @@ export function handlerWrapper(
     // clean up event
     event.headers = lowercaseKeys(event.headers);
     // add empty body if none
-    if (!newEvent.body) newEvent.body = JSON.parse(event.body);
-    if (!newEvent.queryStringParameters) newEvent.queryStringParameters = {};
+    if (!newEvent.body) {
+      newEvent.body = JSON.parse(event.body);
+    }
+    if (!newEvent.queryStringParameters) {
+      newEvent.queryStringParameters = {};
+    }
     try {
-      const { body, status } = await handler(
-        { ...newEvent },
-        context,
-        callback
-      );
+      const { body, status } = await handler(newEvent, context, callback);
 
       return success(body, status, event);
     } catch (error) {
@@ -64,8 +64,8 @@ export function handlerWrapper(
         );
       }
       // log unexpected error for debugging
-      console.log(error);
-      return failure('internal server error', 500, event);
+      console.error(error);
+      return failure("internal server error", 500, event);
     }
   };
   return f;
@@ -83,9 +83,9 @@ function buildResponse(statusCode: number, body: any, _: APIGatewayProxyEvent) {
     statusCode: statusCode,
     headers: {
       // @TODO add cors
-      'Access-Control-Allow-Origin': '*',
+      "Access-Control-Allow-Origin": "*",
     },
-    body: typeof body === 'string' ? body : JSON.stringify(body),
+    body: typeof body === "string" ? body : JSON.stringify(body),
   };
 }
 

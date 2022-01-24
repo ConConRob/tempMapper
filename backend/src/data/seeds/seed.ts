@@ -1,13 +1,12 @@
-import * as fs from 'fs';
+import * as fs from "fs";
 
-import * as parse from 'csv-parse';
-import * as path from 'path';
-import { getDb } from '../../libs/getDb';
-import { LISTING_COLLECTION_NAME } from '../../constants';
-import { Listing } from '../../libs/listings';
+import * as parse from "csv-parse";
+import * as path from "path";
+import { getDb } from "../../libs/getDb";
+import { LISTING_COLLECTION_NAME } from "../../constants";
+import { Listing } from "../../libs/listings";
 
-// import async from 'async'
-const FILE = 'seed.csv';
+const FILE = "seed.csv";
 const FILE_PATH = path.join(__dirname, FILE);
 
 if (require.main === module) {
